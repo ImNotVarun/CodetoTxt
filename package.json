@@ -3,7 +3,7 @@
   "displayName": "txt_creater",
   "publisher": "Varunpanchal",
   "description": "it converts your code to an txt file , so you can upload your code to chatgpt or any other model rather than uploading your whole codebase one by one",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.60.0"
   },
