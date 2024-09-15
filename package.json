@@ -1,6 +1,7 @@
 {
   "name": "codetotxt",
   "displayName": "txt_creater",
+  "publisher": "NotVarun",
   "description": "it converts your code to an txt file , so you can upload your code to chatgpt or any other model rather than uploading your whole codebase one by one",
   "version": "0.0.2",
   "engines": {
