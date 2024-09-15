@@ -1,0 +1,42 @@
+# Node modules directory
+node_modules/
+
+# VS Code specific files
+.vscode/
+.vscodeignore
+
+# Build output
+out/
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# Temporary files
+*.tmp
+*.swp
+
+# NPM lock file
+package-lock.json
+
+# Visual Studio Code extension packaging
+*.vsix
+*.tar.gz
+
+# Ignore all files in the webview `media` folder
+media/
+
+# Ignore all files in the `test` folder
+test/
+
+# Ignore all files in the `coverage` folder
+coverage/
+
+# Ignore all files in the `build` folder
+build/

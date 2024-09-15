@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Combiner</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #61dafb;
+            margin-bottom: 20px;
+        }
+
+        #fileContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            border: 2px dashed #007acc;
+            border-radius: 10px;
+            background-color: #252526;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        #fileContainer:hover {
+            background-color: #2d2d2d;
+        }
+
+        #fileInput {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        #fileContainer label {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d4d4d4;
+            font-size: 18px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #fileList {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #252526;
+            border: 2px dashed #007acc;
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 14px;
+            display: none;
+        }
+
+        #fileList div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #2d2d2d;
+            border-radius: 3px;
+            border-left: 3px solid #007acc;
+        }
+
+        #fileList button {
+            background: none;
+            border: none;
+            color: #f33;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #combineButton {
+            padding: 12px 20px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        #combineButton:hover {
+            background-color: #005a9e;
+        }
+
+        #fileNameInput {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #007acc;
+            border-radius: 5px;
+            background-color: #252526;
+            color: #d4d4d4;
+            font-size: 14px;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 10px;
+            }
+
+            #fileInput,
+            #fileList,
+            #combineButton,
+            #fileNameInput {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>File Combiner</h1>
+    <div id="fileContainer">
+        <label for="fileInput">Click or Drag Files Here</label>
+        <input type="file" id="fileInput" multiple>
+    </div>
+    <div id="fileList"></div>
+    <input type="text" id="fileNameInput" placeholder="Enter custom file name (e.g., my_combined_file)" />
+    <button id="combineButton">Combine Files</button>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const combineButton = document.getElementById('combineButton');
+        const fileNameInput = document.getElementById('fileNameInput');
+        let selectedFiles = [];
+
+        fileInput.addEventListener('change', (event) => {
+            selectedFiles = Array.from(event.target.files).map(file => ({
+                name: file.name,
+                path: file.path
+            }));
+            updateFileList();
+            fileList.style.display = selectedFiles.length > 0 ? 'block' : 'none'; // Show/hide file list container
+        });
+
+        combineButton.addEventListener('click', () => {
+            const fileName = fileNameInput.value.trim();
+            const defaultFileName = 'combined_output';
+            const combinedFileName = fileName || defaultFileName;
+
+            vscode.postMessage({
+                command: 'combineFiles',
+                files: selectedFiles,
+                fileName: combinedFileName
+            });
+        });
+
+        function updateFileList() {
+            fileList.innerHTML = selectedFiles.map(file => `
+                <div>
+                    ${file.name}
+                    <button onclick="removeFile('${file.name}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(fileName) {
+            selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+            updateFileList();
+            fileList.style.display = selectedFiles.length > 0 ? 'block' : 'none'; // Show/hide file list container
+        }
+
+        window.removeFile = removeFile;
+    </script>
+</body>
+
+</html>
