@@ -22,6 +22,11 @@
       }
     ]
   },
+  "author": "NotVarun",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ImNotVarun/CodetoTxt.git"
+  },
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
