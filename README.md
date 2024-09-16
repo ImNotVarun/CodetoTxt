@@ -1,6 +1,6 @@
 <img src="https://github.com/user-attachments/assets/500953e7-2a72-4fb6-82ac-59f2d702fefd" alt="Folder Image" width="77"/>
 
-# File Combiner
+# File Combiner(Txt)
 
 Combine multiple code files into a single text file with custom filenames and output directory management.
 
