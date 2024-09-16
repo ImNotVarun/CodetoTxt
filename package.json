@@ -1,6 +1,6 @@
 {
   "name": "file-combiner",
-  "displayName": "File Combiner",
+  "displayName": "File Combiner(Txt)",
   "description": "Combines multiple files into a single text file",
   "version": "0.0.2",
   "publisher": "Varunpanchal",
