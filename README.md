@@ -44,7 +44,7 @@ Combine multiple code files into a single text file with custom filenames and ou
 
 ## Release Notes
 
-### 0.0.1
+### 0.0.2
 
 - Initial release of `File Combiner`.
 - Added support for combining multiple files into a single text file.
