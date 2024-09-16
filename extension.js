@@ -1,87 +1,140 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 
-function activate(context) {
-	let disposable = vscode.commands.registerCommand('file-combiner.openGUI', function () {
-		const panel = vscode.window.createWebviewPanel(
-			'fileCombiner',
-			'File Combiner',
-			vscode.ViewColumn.One,
-			{
-				enableScripts: true,
-				retainContextWhenHidden: true
+class FileCombinerViewProvider {
+	constructor(extensionUri) {
+		this._extensionUri = extensionUri;
+		this._view = undefined;
+		this._currentPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+	}
+
+	resolveWebviewView(webviewView) {
+		this._view = webviewView;
+
+		webviewView.webview.options = {
+			enableScripts: true,
+			localResourceRoots: [this._extensionUri]
+		};
+
+		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+		webviewView.webview.onDidReceiveMessage(data => {
+			switch (data.type) {
+				case 'combine':
+					this._combineFiles(data.files);
+					break;
+				case 'openDirectory':
+					this._currentPath = data.path;
+					this._updateFileList();
+					break;
+				case 'goBack':
+					this._currentPath = path.dirname(this._currentPath);
+					this._updateFileList();
+					break;
+				case 'showMessage':
+					vscode.window.showInformationMessage(data.message);
+					break;
 			}
-		);
+		});
 
-		panel.webview.html = getWebviewContent(panel);
+		this._updateFileList();
+	}
 
-		panel.webview.onDidReceiveMessage(
-			async message => {
-				switch (message.command) {
-					case 'combineFiles':
-						const files = message.files;
-						const customFileName = message.fileName;
+	_updateFileList() {
+		if (this._view) {
+			const files = this._getFilesInDirectory(this._currentPath);
+			this._view.webview.postMessage({ type: 'updateFileList', files, currentPath: this._currentPath });
+		}
+	}
 
-						if (!files || files.length === 0) {
-							vscode.window.showInformationMessage('No files selected');
-							return;
-						}
+	_getFilesInDirectory(dir) {
+		const files = fs.readdirSync(dir, { withFileTypes: true });
+		return files.map(file => ({
+			name: file.name,
+			isDirectory: file.isDirectory(),
+			path: path.join(dir, file.name)
+		}));
+	}
 
-						const workspaceFolders = vscode.workspace.workspaceFolders;
-						if (!workspaceFolders) {
-							vscode.window.showErrorMessage('No folder opened in workspace');
-							return;
-						}
+	_combineFiles(files) {
+		if (files.length === 0) {
+			vscode.window.showInformationMessage('No files selected');
+			return;
+		}
 
-						const rootPath = workspaceFolders[0].uri.fsPath;
-						const combinedFolderPath = path.join(rootPath, 'combined_files');
-						if (!fs.existsSync(combinedFolderPath)) {
-							fs.mkdirSync(combinedFolderPath);
-						}
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			vscode.window.showErrorMessage('No folder opened in workspace');
+			return;
+		}
 
-						let baseName = customFileName || 'combined_output';
-						let outputPath = path.join(combinedFolderPath, `${baseName}.txt`);
-						let counter = 1;
+		const combinedFolderPath = path.join(workspaceFolder.uri.fsPath, 'combined_files');
+		if (!fs.existsSync(combinedFolderPath)) {
+			fs.mkdirSync(combinedFolderPath);
+		}
 
-						// Generate a unique file name
-						while (fs.existsSync(outputPath)) {
-							outputPath = path.join(combinedFolderPath, `${baseName}${counter}.txt`);
-							counter++;
-						}
+		const outputPath = path.join(combinedFolderPath, `combined_output_${Date.now()}.txt`);
 
-						let combinedContent = '';
-						for (const file of files) {
-							try {
-								const content = fs.readFileSync(file.path, 'utf8');
-								combinedContent += `// File: ${file.name}\n${content}\n\n`;
-							} catch (error) {
-								vscode.window.showErrorMessage(`Failed to read file: ${file.name}`);
-								return;
-							}
-						}
+		let combinedContent = '';
+		for (const file of files) {
+			try {
+				const content = fs.readFileSync(file, 'utf8');
+				combinedContent += `// File: ${path.basename(file)}\n${content}\n\n`;
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to read file: ${file}`);
+				return;
+			}
+		}
 
-						try {
-							fs.writeFileSync(outputPath, combinedContent);
-							vscode.window.showInformationMessage(`Combined ${files.length} files into ${outputPath}`);
-						} catch (error) {
-							vscode.window.showErrorMessage('Failed to write combined file');
-						}
-						break;
-				}
-			},
-			undefined,
-			context.subscriptions
-		);
-	});
+		try {
+			fs.writeFileSync(outputPath, combinedContent);
+			vscode.window.showInformationMessage(`Combined ${files.length} files into ${outputPath}`);
+		} catch (error) {
+			vscode.window.showErrorMessage('Failed to write combined file');
+		}
+	}
 
-	context.subscriptions.push(disposable);
+	_getHtmlForWebview(webview) {
+		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css'));
+		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
+		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js'));
+
+		return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<link href="${styleResetUri}" rel="stylesheet">
+				<link href="${styleVSCodeUri}" rel="stylesheet">
+				<link href="https://cdn.jsdelivr.net/npm/vscode-codicons/dist/codicon.css" rel="stylesheet">
+				<title>File Combiner</title>
+			</head>
+			<body>
+				<div id="buttons">
+					<button id="combineButton">Combine Files</button>
+				</div>
+				<div id="fileList" role="tree"></div>
+				<script src="${scriptUri}"></script>
+			</body>
+			</html>`;
+	}
 }
 
-function getWebviewContent(panel) {
-	const htmlPath = path.join(__dirname, 'webview.html');
-	return fs.readFileSync(htmlPath, 'utf8');
+
+
+function activate(context) {
+	const provider = new FileCombinerViewProvider(context.extensionUri);
+
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider('fileCombinerView', provider)
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('file-combiner.refresh', () => {
+			provider._updateFileList();
+		})
+	);
 }
 
 function deactivate() { }

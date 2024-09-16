@@ -1,0 +1,113 @@
+body {
+    padding: 10px;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-foreground);
+}
+
+#buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.file-label {
+    margin-left: 8px;
+    flex-grow: 1;
+}
+
+.file-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(226, 223, 223, 0.564);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    background-color: transparent;
+}
+
+.file-checkbox:checked {
+    background-color: var(--vscode-checkbox-background);
+    border-color: var(--vscode-checkbox-background);
+}
+
+.file-checkbox:checked::after {
+    content: '\2713';
+    font-size: 14px;
+    color: var(--vscode-checkbox-foreground);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-label {
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    margin-right: 4px;
+    cursor: pointer;
+}
+
+.folder-children {
+    margin-left: 20px;
+}
+
+.codicon {
+    font-family: codicon;
+    font-size: 16px;
+    line-height: 16px;
+    margin-right: 6px;
+}
+
+.codicon-file::before {
+    content: "\eb62";
+    color: #4CAF50;
+}
+
+.codicon-folder::before,
+.codicon-folder-opened::before {
+    content: "\ea83";
+    color: #FFC107;
+}
+
+.codicon-folder-opened::before {
+    content: "\ea84";
+}
+
+.file-item:first-child .codicon-arrow-left {
+    color: var(--vscode-foreground);
+    /* Use the default text color for the back arrow */
+}

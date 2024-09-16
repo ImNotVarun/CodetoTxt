@@ -29,8 +29,6 @@ package-lock.json
 *.vsix
 *.tar.gz
 
-# Ignore all files in the webview `media` folder
-media/
 
 # Ignore all files in the `test` folder
 test/
