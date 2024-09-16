@@ -2,7 +2,7 @@
   "name": "file-combiner",
   "displayName": "File Combiner",
   "description": "Combines multiple files into a single text file",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Varunpanchal",
   "repository": {
     "type": "git",
