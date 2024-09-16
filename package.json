@@ -9,6 +9,9 @@
   "categories": [
     "Other"
   ],
+  "activationEvents": [
+    "onView:fileCombinerView"
+  ],
   "icon": "folder.png",
   "main": "./extension.js",
   "contributes": {
